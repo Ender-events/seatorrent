@@ -7,6 +7,8 @@ project(seatorrent
 )
 
 add_library(seatorrent
+  src/bencode/coroutine.cpp
+  src/bencode/metadata.cpp
   src/bencode/parser.cpp
 )
 
@@ -33,5 +35,22 @@ set_property(
 
 set_property(
   TARGET seatorrent dump_bencode
+  PROPERTY CXX_EXTENSIONS OFF
+)
+
+
+add_executable(dump_peers_from_tracker
+    apps/dump_peers_from_tracker.cpp
+)
+
+target_link_libraries(dump_peers_from_tracker PUBLIC seatorrent)
+
+set_property(
+  TARGET seatorrent dump_peers_from_tracker
+  PROPERTY EXPORT_COMPILE_COMMANDS ON
+)
+
+set_property(
+  TARGET seatorrent dump_peers_from_tracker
   PROPERTY CXX_EXTENSIONS OFF
 )
