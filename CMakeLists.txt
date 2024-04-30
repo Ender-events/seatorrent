@@ -54,3 +54,9 @@ set_property(
   TARGET seatorrent dump_peers_from_tracker
   PROPERTY CXX_EXTENSIONS OFF
 )
+
+add_executable(dump_url
+    apps/dump_url.cpp
+)
+
+target_link_libraries(dump_url PUBLIC seatorrent)
