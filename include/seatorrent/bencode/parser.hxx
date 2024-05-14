@@ -13,4 +13,4 @@ namespace seatorrent::bencode {
     nested.await_suspend(std::noop_coroutine()).resume();
     sax_parser(&sax);
   }
-}
+} // namespace seatorrent::bencode

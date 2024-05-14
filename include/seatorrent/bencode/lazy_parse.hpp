@@ -16,7 +16,8 @@ namespace seatorrent::bencode {
 
     struct promise_type {
       struct final_awaiter {
-        [[nodiscard]] bool await_ready() const noexcept {
+        [[nodiscard]]
+        bool await_ready() const noexcept {
           return false;
         }
 
@@ -60,7 +61,8 @@ namespace seatorrent::bencode {
     struct nested_awaiter {
       std::coroutine_handle<promise_type> continuation = nullptr;
 
-      [[nodiscard]] bool await_ready() const {
+      [[nodiscard]]
+      bool await_ready() const {
         return false;
       }
 
@@ -68,9 +70,9 @@ namespace seatorrent::bencode {
         auto old = continuation.promise().continuation;
         continuation.promise().continuation = handle;
         TRACE_CORO(
-          "await suspend "
-          << &continuation.promise() << "; handle " << handle.address() << " and resume "
-          << continuation.address() << " (old: " << old.address() << ")");
+          "await suspend " << &continuation.promise() << "; handle " << handle.address()
+                           << " and resume " << continuation.address() << " (old: " << old.address()
+                           << ")");
         static_cast<void>(old);
         return continuation;
       }
@@ -89,4 +91,4 @@ namespace seatorrent::bencode {
 
     std::coroutine_handle<promise_type> continuation = nullptr;
   };
-}
+} // namespace seatorrent::bencode

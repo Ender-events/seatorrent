@@ -37,4 +37,4 @@ namespace seatorrent::bencode {
   };
 
   lazy_parse from_bencode(element* bencode, metadata& metadata);
-}
+} // namespace seatorrent::bencode

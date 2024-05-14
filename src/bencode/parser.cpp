@@ -113,4 +113,4 @@ namespace seatorrent::bencode {
     position_ += number; // pass '<string>'
     sax_->string(str);
   }
-}
+} // namespace seatorrent::bencode

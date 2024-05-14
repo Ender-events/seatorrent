@@ -99,4 +99,4 @@ namespace seatorrent::bencode {
       }
     }
   }
-}
+} // namespace seatorrent::bencode

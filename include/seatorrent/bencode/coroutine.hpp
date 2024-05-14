@@ -1,22 +1,21 @@
 #pragma once
 
-#include "seatorrent/bencode/metadata.hpp"
-#include "seatorrent/bencode/sax_interface.hpp"
 #include "seatorrent/bencode/lazy_parse.hpp"
+#include "seatorrent/bencode/sax_interface.hpp"
 #include "seatorrent/util/log.hpp"
 
 #include <algorithm>
 #include <coroutine>
 #include <format>
 #include <iomanip>
-#include <type_traits>
-#include <variant>
 #include <iostream>
 #include <span>
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <variant>
 
 template <class... Ts>
 struct overloaded : Ts... {
@@ -47,11 +46,11 @@ namespace seatorrent::bencode {
       end_object,
       key>;
 
-  }
+  } // namespace type
 
   namespace details {
     class async;
-  }
+  } // namespace details
 
   struct sax_coroutine : public seatorrent::bencode::sax_t {
     friend details::async;
@@ -77,7 +76,8 @@ namespace seatorrent::bencode {
         : sax_{sax}
         , data_{data} {};
 
-      [[nodiscard]] bool await_ready() const {
+      [[nodiscard]]
+      bool await_ready() const {
         return !std::holds_alternative<std::monostate>(data_);
       }
 
@@ -102,7 +102,7 @@ namespace seatorrent::bencode {
       type::data data_{};
       std::coroutine_handle<> coro_ = nullptr;
     };
-  }
+  } // namespace details
 
   class element {
    public:
@@ -204,4 +204,4 @@ namespace seatorrent::bencode {
     sax_coroutine* sax_ = nullptr;
     type::data peek_{};
   };
-}
+} // namespace seatorrent::bencode

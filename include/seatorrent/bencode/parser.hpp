@@ -26,6 +26,6 @@ namespace seatorrent::bencode {
     sax_t* sax_ = nullptr;
     std::size_t position_ = 0;
   };
-}
+} // namespace seatorrent::bencode
 
 #include "parser.hxx" // IWYU pragma: keep
