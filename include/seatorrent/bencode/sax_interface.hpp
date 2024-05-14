@@ -3,6 +3,8 @@
 #include <string_view>
 
 namespace seatorrent::bencode {
+  class parser;
+
   class sax_t {
    public:
     sax_t() = default;
@@ -18,5 +20,17 @@ namespace seatorrent::bencode {
     virtual void start_object() = 0;
     virtual void end_object() = 0;
     virtual void key(std::string_view value) = 0;
+
+    void set_parser(parser* p) {
+      parser_ = p;
+    }
+
+   protected:
+    [[nodiscard]]
+    const class parser* parser() const {
+      return parser_;
+    }
+   private:
+    class parser* parser_ = nullptr;
   };
-}
+} // namespace seatorrent::bencode

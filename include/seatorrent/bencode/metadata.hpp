@@ -32,6 +32,8 @@ namespace seatorrent::bencode {
 
       std::vector<file> files{}; /**< List of files for multi-file torrents. */
     } info;
+
+    std::string info_hash{}; /**< SHA1 hash of the info dictionary. */
   };
 
   lazy_parse from_bencode(element* bencode, metadata& metadata);

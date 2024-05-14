@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <variant>
 #include <iostream>
+#include <span>
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
@@ -61,6 +62,9 @@ namespace seatorrent::bencode {
     void start_object() override;
     void end_object() override;
     void key(std::string_view value) override;
+
+    [[nodiscard]]
+    const char* current() const;
 
    private:
     details::async* async_;
@@ -152,6 +156,22 @@ namespace seatorrent::bencode {
               : std::quoted(std::string_view{"<binary>"})));
     }
 
+    template <typename T>
+    lazy_parse get_to(std::span<T>& value) {
+      auto token = co_await next_token();
+      auto view = std::get<std::string_view>(token);
+      TRACE_PARSE(
+        "get to span(" << view.size() << "/" << sizeof(T) << "): "
+                       << ((std::ranges::all_of(value, [](char c) { return std::isprint(c) != 0; }))
+                             ? std::quoted(std::string_view{view})
+                             : std::quoted(std::string_view{"<binary>"})));
+      if (view.size() % sizeof(T) != 0) {
+        // throw std::runtime_error{std::format("invalid span size: {} % {}", view.size_bytes(), sizeof(T))};
+        std::cout << "invalid span size: " << view.size() << " % " << sizeof(T) << std::endl;
+      }
+      value = std::span<T>{reinterpret_cast<T*>(view.data()), view.size() / sizeof(T)};
+    }
+
     lazy_parse ignore_token() {
       uint64_t nb_array = 0;
       uint64_t nb_object = 0;
@@ -175,6 +195,10 @@ namespace seatorrent::bencode {
       peek_ = std::monostate();
       return details::async{sax_, data};
     };
+
+    const char* get_current() const {
+      return sax_->current();
+    }
 
    private:
     sax_coroutine* sax_ = nullptr;

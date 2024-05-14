@@ -1,8 +1,10 @@
 #include "seatorrent/bencode/metadata.hpp"
 
 #include "seatorrent/bencode/coroutine.hpp"
-#include "seatorrent/util/hash.hpp"
 #include "seatorrent/bencode/lazy_parse.hpp"
+#include "seatorrent/util/codec.hpp"
+#include "seatorrent/util/hash.hpp"
+#include <iostream>
 #include <ostream>
 #include <stdexcept>
 #include <variant>
@@ -23,9 +25,15 @@ namespace seatorrent::bencode {
       case "announce"_sh:
         co_await bencode->get_to(metadata.announce);
         break;
-      case "info"_sh:
+      case "info"_sh: {
+        auto b = bencode->get_current();
         co_await bencode->get_to(metadata.info);
+        auto e = bencode->get_current();
+        std::string_view info_span{b, e};
+        auto hash = seatorrent::util::sha1(info_span);
+        metadata.info_hash = util::url_encode(hash);
         break;
+      }
       default:
         co_await bencode->ignore_token();
         break;

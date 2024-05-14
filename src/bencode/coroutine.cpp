@@ -1,4 +1,5 @@
 #include "seatorrent/bencode/coroutine.hpp"
+#include "seatorrent/bencode/parser.hpp"
 
 namespace seatorrent::bencode {
 
@@ -47,4 +48,8 @@ namespace seatorrent::bencode {
     async_->resume(type::key{value});
     TRACE_CORO("key resumed");
   }
-}
+
+  const char* sax_coroutine::current() const {
+    return parser()->current();
+  }
+} // namespace seatorrent::bencode

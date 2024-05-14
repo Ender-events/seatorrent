@@ -6,14 +6,39 @@ project(seatorrent
   LANGUAGES CXX
 )
 
+include(FetchContent)
+# FetchContent_Declare(
+#   stdexec
+#   GIT_REPOSITORY "https://github.com/NVIDIA/stdexec.git"
+#   GIT_TAG main
+# )
+# set(STDEXEC_BUILD_TESTS Off)
+# set(STDEXEC_BUILD_EXAMPLES Off)
+# FetchContent_MakeAvailable(stdexec)
+
+# FetchContent_Declare(
+#   stdnet
+#   SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../dietmarkuehl/stdnet/"
+#   GIT_REPOSITORY "https://github.com/dietmarkuehl/stdnet.git"
+#   GIT_TAG main
+# )
+# FetchContent_MakeAvailable(stdnet)
+add_subdirectory(stdnet)
+include_directories(stdnet/include)
+
 add_library(seatorrent
   src/bencode/coroutine.cpp
   src/bencode/metadata.cpp
   src/bencode/parser.cpp
+  src/tracker.cpp
 )
 
-target_compile_features(seatorrent PUBLIC cxx_std_20)
-target_compile_options(seatorrent PUBLIC -Wall -Wextra -Wpedantic -Werror)
+# add_compile_options(-fsanitize=address -g)
+# add_link_options(-fsanitize=address)
+target_compile_features(seatorrent PUBLIC cxx_std_23)
+target_link_libraries(seatorrent PRIVATE ssl crypto)
+target_link_libraries(seatorrent PUBLIC STDEXEC::stdexec event_core_shared)
+target_compile_options(seatorrent PUBLIC -Wall -Wextra -Wpedantic) # -Werror)
 
 target_include_directories(
     seatorrent

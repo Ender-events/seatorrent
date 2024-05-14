@@ -12,6 +12,10 @@ namespace seatorrent::bencode {
     void sax_parser(sax_t* sax);
     template <typename T>
     void lazy_parser_to(T& obj);
+
+    const char* current() const {
+      return buffer_.data() + position_;
+    }
    private:
     void parser_array();
     void parser_content();
