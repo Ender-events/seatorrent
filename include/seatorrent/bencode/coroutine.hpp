@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <coroutine>
+#include <cstdint>
 #include <format>
 #include <iomanip>
 #include <iostream>
@@ -16,6 +17,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 
 template <class... Ts>
 struct overloaded : Ts... {

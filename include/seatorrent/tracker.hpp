@@ -1,5 +1,6 @@
 #pragma once
 
+#include "seatorrent/bencode/parser.hpp"
 #include "seatorrent/util/hash.hpp"
 #include "seatorrent/util/net.hpp"
 
