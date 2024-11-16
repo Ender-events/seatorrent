@@ -75,3 +75,9 @@ add_executable(dump_url
 )
 
 target_link_libraries(dump_url PUBLIC seatorrent)
+
+add_executable(http_request
+    apps/http_request.cpp
+)
+
+target_link_libraries(http_request PUBLIC seatorrent)

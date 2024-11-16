@@ -42,13 +42,18 @@ namespace seatorrent::util {
           userinfo_ = scheme_ + 3;
         }
         host_ = url_.find_first_not_of(valid_host, userinfo_);
-        if (host_ == std::string::npos) {
+        if (host_ == userinfo_) {
           throw std::invalid_argument{std::format("Can't find host in {}", url_)};
         }
-        if (url_[host_] == ':') {
+        if (host_ == std::string::npos) {
+          host_ = url_.size();
+        } else if (url_[host_] == ':') {
           port_ = url_.find_first_not_of("0123456789", host_ + 1);
+          if (host_ + 1 == port_) {
+            throw std::invalid_argument{std::format("Can't find port in {}", url_)};
+          }
         } else {
-          port_ = host_ + 1;
+          port_ = host_ + 0;
         }
       } else {
         port_ = scheme_ + 1;
@@ -80,10 +85,16 @@ namespace seatorrent::util {
     }
 
     std::string_view port() const {
+      if (host_ >= url_.size() || host_ == port_) {
+        return "";
+      }
       return substr(host_ + 1, port_);
     }
 
     std::string_view path() const {
+      if (port_ >= url_.size() || port_ == path_) {
+        return "";
+      }
       return substr(port_, path_);
     }
 
@@ -147,6 +158,11 @@ namespace seatorrent::util {
     if (service.empty()) {
       service = url.scheme();
     }
+    // https not supported yet
+    if (url.scheme() == "https") {
+      host = "127.0.0.1";
+      service = "http";
+    }
     for (auto endpoint: resolve(host, service)) {
       stdnet::basic_stream_socket<stdnet::ip::tcp> client{context, endpoint};
       co_await stdnet::async_connect(client);
@@ -177,9 +193,7 @@ namespace seatorrent::util {
       end += n;
     }
     buffer.resize(end);
-    std::cout << "recv_all: " << end << "=" << buffer.size() << "\n";
     std::string_view res{buffer.data(), end};
-    std::cout << res << std::endl;
     co_return buffer;
   }
 } // namespace seatorrent::util

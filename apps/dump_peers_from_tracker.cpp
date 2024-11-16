@@ -25,6 +25,24 @@ bool is_printable(char value) {
   return std::isprint(value) != 0;
 }
 
+seatorrent::util::url get_announce_url(const seatorrent::bencode::metadata& meta) {
+  if (!meta.announce.empty()) {
+    auto url = seatorrent::util::url{meta.announce};
+    if (url.scheme().starts_with("http")) {
+      return url;
+    }
+  }
+  for (const auto& list: meta.announce_list) {
+    for (const auto& announce: list) {
+      auto url = seatorrent::util::url{announce};
+      if (url.scheme().starts_with("http")) {
+        return url;
+      }
+    }
+  }
+  throw std::runtime_error("no http announce url found");
+}
+
 exec::task<void>
   dump_tracker(stdnet::io_context& context, const seatorrent::bencode::metadata& meta) {
   seatorrent::tracker::request request{
@@ -40,7 +58,8 @@ exec::task<void>
     .numwant = 5,
     .redundant = 0,
   };
-  seatorrent::util::url url{meta.announce};
+  auto url = get_announce_url(meta);
+  std::cout << "announce url: " << url.view() << '\n';
   auto response = co_await seatorrent::tracker::announce(context, url, request, "seatorrent/0.1");
   if (!response.failure_reason.empty()) {
     std::cout << "failure reason: " << response.failure_reason << '\n';

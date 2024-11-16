@@ -25,6 +25,9 @@ namespace seatorrent::bencode {
       case "announce"_sh:
         co_await bencode->get_to(metadata.announce);
         break;
+      case "announce-list"_sh:
+        co_await bencode->get_to(metadata.announce_list);
+        break;
       case "info"_sh: {
         auto b = bencode->get_current();
         co_await bencode->get_to(metadata.info);

@@ -127,13 +127,18 @@ namespace seatorrent::tracker {
     auto client = co_await dial(context, url);
     std::string buf{};
     auto out = std::back_inserter(buf);
-    out = std::format_to(out, "GET {}?{} HTTP/1.1\r\n", url.path(), request);
+    auto path = url.path();
+    out = std::format_to(out, "GET {}?{} HTTP/1.1\r\n", (path.empty() ? "/" : path), request);
     out = std::format_to(out, "Host: {}\r\n", url.host());
     out = std::format_to(out, "User-Agent: {}\r\n", user_agent);
     out = std::format_to(out, "Connection: close\r\n\r\n");
+    std::cout << buf << std::endl;
     co_await util::send_all(client, buf);
     auto res = co_await util::recv_all(client);
     std::string_view res_sv{res.data(), res.size()};
+    if (res_sv.substr(0, 64).find("200") == std::string_view::npos) {
+      co_return response{std::format("http error: {}", res_sv)};
+    }
     auto header = res_sv.find("\r\n\r\n");
     if (header == std::string_view::npos) {
       co_return response{"invalid response header"};

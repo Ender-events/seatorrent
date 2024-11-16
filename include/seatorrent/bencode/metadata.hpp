@@ -15,7 +15,8 @@ namespace seatorrent::bencode {
   * @brief Structure to represent BitTorrent metainfo data.
   */
   struct metadata {
-    std::string announce{}; /**< The URL of the tracker. */
+    std::string announce{};                                /**< The URL of the tracker. */
+    std::vector<std::vector<std::string>> announce_list{}; /**< List of tracker URLs. BEP 12 */
 
     struct info {
       std::string name{};      /**< Suggested name to save the file or directory as. */
