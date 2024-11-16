@@ -13,7 +13,9 @@ namespace seatorrent::bencode {
   void parser::sax_parser(sax_t* sax) {
     sax_ = sax;
     position_ = 0;
+    sax_->set_parser(this);
     parser_content();
+    sax_->set_parser(nullptr);
     sax_ = nullptr;
   }
 
@@ -111,4 +113,4 @@ namespace seatorrent::bencode {
     position_ += number; // pass '<string>'
     sax_->string(str);
   }
-}
+} // namespace seatorrent::bencode

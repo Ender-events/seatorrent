@@ -1,11 +1,11 @@
 #include "seatorrent/bencode/parser.hpp"
 
 #include <algorithm>
-#include <bits/ranges_algo.h>
 #include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <span>
@@ -32,7 +32,7 @@ struct json_dump : public seatorrent::bencode::sax_t {
       print_comma();
     }
     if (std::ranges::all_of(value, is_printable)) {
-      std::cout << '"' << value << '"';
+      std::cout << std::quoted(value);
     } else {
       std::cout << R"("<binary>")";
     }
