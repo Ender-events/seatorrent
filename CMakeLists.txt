@@ -70,6 +70,22 @@ set_property(
   PROPERTY CXX_EXTENSIONS OFF
 )
 
+add_executable(dl_from_peer
+    apps/dl_from_peer.cpp
+)
+
+target_link_libraries(dl_from_peer PUBLIC seatorrent)
+
+set_property(
+  TARGET dl_from_peer
+  PROPERTY EXPORT_COMPILE_COMMANDS ON
+)
+
+set_property(
+  TARGET dl_from_peer
+  PROPERTY CXX_EXTENSIONS OFF
+)
+
 add_executable(dump_url
     apps/dump_url.cpp
 )

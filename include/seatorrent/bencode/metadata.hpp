@@ -35,6 +35,8 @@ namespace seatorrent::bencode {
     } info;
 
     std::string info_hash{}; /**< SHA1 hash of the info dictionary. */
+
+    static metadata from_file(const std::string& path);
   };
 
   lazy_parse from_bencode(element* bencode, metadata& metadata);

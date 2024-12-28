@@ -2,11 +2,16 @@
 
 #include "seatorrent/bencode/coroutine.hpp"
 #include "seatorrent/bencode/lazy_parse.hpp"
-#include "seatorrent/util/codec.hpp"
+#include "seatorrent/bencode/parser.hpp"
 #include "seatorrent/util/hash.hpp"
+
+#include <fcntl.h>
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <variant>
 
 namespace seatorrent::bencode {
@@ -34,7 +39,7 @@ namespace seatorrent::bencode {
         auto e = bencode->get_current();
         std::string_view info_span{b, e};
         auto hash = seatorrent::util::sha1(info_span);
-        metadata.info_hash = util::url_encode(hash);
+        metadata.info_hash = {reinterpret_cast<const char*>(hash.data()), hash.size()};
         break;
       }
       default:
@@ -101,5 +106,33 @@ namespace seatorrent::bencode {
         break;
       }
     }
+  }
+
+  metadata metadata::from_file(const std::string& path) {
+    int fd = open(path.c_str(), O_RDONLY);
+    char* buffer = nullptr;
+    size_t len = 0;
+    seatorrent::bencode::metadata meta{};
+    try {
+      struct stat stat = {};
+      fstat(fd, &stat);
+      len = stat.st_size;
+      buffer = static_cast<char*>(mmap(nullptr, len, PROT_READ, MAP_PRIVATE, fd, 0));
+      seatorrent::bencode::parser parser{
+        std::string_view{buffer, len}
+      };
+      parser.lazy_parser_to(meta);
+    } catch (...) {
+      close(fd);
+      if (buffer != MAP_FAILED) {
+        munmap(buffer, len);
+      }
+      throw;
+    }
+    close(fd);
+    if (buffer != MAP_FAILED) {
+      munmap(buffer, len);
+    }
+    return meta;
   }
 } // namespace seatorrent::bencode

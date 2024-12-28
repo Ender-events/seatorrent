@@ -1,6 +1,7 @@
 #pragma once
 
 #include "seatorrent/bencode/parser.hpp"
+#include "seatorrent/util/codec.hpp"
 #include "seatorrent/util/hash.hpp"
 #include "seatorrent/util/net.hpp"
 
@@ -94,7 +95,7 @@ struct std::formatter<seatorrent::tracker::request> {
     out = std::format_to(
       ctx.out(),
       "info_hash={}&peer_id={}&port={}&uploaded={}&downloaded={}&left={}&corrupt={}&key={:08X}",
-      req.info_hash,
+      seatorrent::util::url_encode_sv{req.info_hash},
       req.peer_id,
       req.port,
       req.uploaded,

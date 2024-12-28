@@ -180,6 +180,17 @@ namespace seatorrent::util {
     co_return;
   }
 
+  exec::task<std::vector<char>> recv(stdnet::basic_stream_socket<stdnet::ip::tcp>& client) {
+    std::vector<char> buffer(1024);
+    std::size_t end = 0;
+    auto n = co_await stdnet::async_receive(
+      client, stdnet::buffer(buffer.data() + end, buffer.size() - end));
+    end += n;
+    buffer.resize(end);
+    std::string_view res{buffer.data(), end};
+    co_return buffer;
+  }
+
   exec::task<std::vector<char>> recv_all(stdnet::basic_stream_socket<stdnet::ip::tcp>& client) {
     std::vector<char> buffer(1024);
     std::size_t end = 0;
