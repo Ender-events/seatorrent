@@ -24,6 +24,13 @@ int main(int argc, char* argv[]) {
         co_await seatorrent::peer::dial(context, stdnet::ip::address_v4{ntohl(sin_addr)}, port);
       auto meta = seatorrent::bencode::metadata::from_file(args[1]);
       co_await peer.handshake(meta.info_hash, "-st0001-1J_mP.p3e45-");
+      auto lenght = co_await peer.recv_lenght();
+      std::cout << lenght << '\n';
+      auto type = co_await peer.recv_type();
+      std::cout << type << '\n';
+      co_await peer.recv_bitfield(lenght - 1);
+      const auto& bitfield = peer.get_bitfield();
+      std::cout << std::string_view{(char*) bitfield.data(), bitfield.size()} << std::endl;
       auto res = co_await peer.recv();
       std::cout << res << '\n';
     },

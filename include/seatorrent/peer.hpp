@@ -1,13 +1,17 @@
 #pragma once
 
+#include "seatorrent/message/message.hpp"
 #include "seatorrent/util/net.hpp"
 
+#include <cstddef>
+#include <cstdint>
 #include <exec/task.hpp>
 #include <iostream>
 #include <stdnet/internet.hpp>
 #include <stdnet/io_context.hpp>
 #include <stdnet/socket.hpp>
 #include <string_view>
+#include <vector>
 
 namespace seatorrent {
   class peer {
@@ -30,7 +34,7 @@ namespace seatorrent {
       out = std::format_to(out, "{}{}", info_hash, peer_id);
       co_await util::send_all(tcp_, buf);
 
-      std::vector<char> buffer(68);
+      std::array<char, 68> buffer{};
       std::size_t end = 0;
       while (true) {
         auto n = co_await stdnet::async_receive(
@@ -52,12 +56,45 @@ namespace seatorrent {
       co_return std::string{res.data(), res.size()};
     }
 
+    exec::task<uint32_t> recv_lenght() {
+      uint32_t lenght = 0;
+      co_await recv((char*) &lenght, sizeof(lenght));
+      co_return ntohl(lenght);
+    }
+
+    exec::task<message::type> recv_type() {
+      message::type type{};
+      co_await recv((char*) &type, sizeof(type));
+      co_return type;
+    }
+
+    exec::task<void> recv_bitfield(size_t lenght) {
+      bitfield_.resize(lenght);
+      co_await recv((char*) bitfield_.data(), lenght);
+    }
+
+    const std::vector<uint8_t>& get_bitfield() const {
+      return bitfield_;
+    }
+
    private:
     peer(stdnet::basic_stream_socket<stdnet::ip::tcp>&& tcp)
       : tcp_{std::move(tcp)} {
     }
 
+    exec::task<void> recv(char* buffer, size_t size) {
+      std::size_t end = 0;
+      while (true) {
+        auto n = co_await stdnet::async_receive(tcp_, stdnet::buffer(buffer + end, size - end));
+        end += n;
+        if (n == 0u || end == size) {
+          break;
+        }
+      }
+    }
+
     stdnet::basic_stream_socket<stdnet::ip::tcp> tcp_;
     std::string peer_id_;
+    std::vector<uint8_t> bitfield_{};
   };
 } // namespace seatorrent
