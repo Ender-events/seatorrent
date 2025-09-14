@@ -1,4 +1,5 @@
 #include "seatorrent/bencode/metadata.hpp"
+#include "seatorrent/message/message.hpp"
 #include "seatorrent/peer.hpp"
 #include "seatorrent/util/net.hpp"
 #include "stdnet/netfwd.hpp"
@@ -7,6 +8,8 @@
 #include <exec/async_scope.hpp>
 #include <span>
 #include <string_view>
+
+using namespace seatorrent;
 
 int main(int argc, char* argv[]) {
   auto args = std::span(argv, argc);
@@ -20,9 +23,8 @@ int main(int argc, char* argv[]) {
       auto port = std::atoi(endpoint.substr(sep + 1).data());
       stdnet::ip::address_v4::uint_type sin_addr = 0;
       inet_pton(AF_INET, host.c_str(), &sin_addr);
-      auto peer =
-        co_await seatorrent::peer::dial(context, stdnet::ip::address_v4{ntohl(sin_addr)}, port);
-      auto meta = seatorrent::bencode::metadata::from_file(args[1]);
+      auto peer = co_await peer::dial(context, stdnet::ip::address_v4{ntohl(sin_addr)}, port);
+      auto meta = bencode::metadata::from_file(args[1]);
       co_await peer.handshake(meta.info_hash, "-st0001-1J_mP.p3e45-");
       auto lenght = co_await peer.recv_lenght();
       std::cout << lenght << '\n';
@@ -31,8 +33,14 @@ int main(int argc, char* argv[]) {
       co_await peer.recv_bitfield(lenght - 1);
       const auto& bitfield = peer.get_bitfield();
       std::cout << std::string_view{(char*) bitfield.data(), bitfield.size()} << std::endl;
+      co_await peer.send_unchoke();
+      co_await peer.send_interested();
+      message::buffer buffer;
+      co_await peer.recv_message(buffer);
+      std::string_view buf_view{buffer.data(), buffer.size()};
+      std::cout << buffer.size() << std::endl;
       auto res = co_await peer.recv();
-      std::cout << res << '\n';
+      std::cout << res << std::endl;
     },
     context,
     args));

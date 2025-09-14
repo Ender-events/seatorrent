@@ -10,6 +10,7 @@
 #include <stdnet/internet.hpp>
 #include <stdnet/io_context.hpp>
 #include <stdnet/socket.hpp>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -24,6 +25,13 @@ namespace seatorrent {
       co_return peer{std::move(tcp)};
     }
 
+    // Element access
+
+    const std::vector<uint8_t>& get_bitfield() const {
+      return bitfield_;
+    }
+
+    // network
     exec::task<void> handshake(std::string_view info_hash, std::string_view peer_id) {
       std::string buf{};
       auto out = std::back_inserter(buf);
@@ -56,6 +64,13 @@ namespace seatorrent {
       co_return std::string{res.data(), res.size()};
     }
 
+    exec::task<message::message_view> recv_message(message::buffer& buffer) {
+      auto lenght = co_await recv_lenght();
+      buffer.resize(lenght);
+      co_await recv(buffer.data(), lenght);
+      co_return message::message_view{&buffer};
+    }
+
     exec::task<uint32_t> recv_lenght() {
       uint32_t lenght = 0;
       co_await recv((char*) &lenght, sizeof(lenght));
@@ -73,8 +88,20 @@ namespace seatorrent {
       co_await recv((char*) bitfield_.data(), lenght);
     }
 
-    const std::vector<uint8_t>& get_bitfield() const {
-      return bitfield_;
+    exec::task<void> send_choke() {
+      co_await send_type_empty_payload(message::type::choke);
+    }
+
+    exec::task<void> send_unchoke() {
+      co_await send_type_empty_payload(message::type::unchoke);
+    }
+
+    exec::task<void> send_interested() {
+      co_await send_type_empty_payload(message::type::interested);
+    }
+
+    exec::task<void> send_not_interested() {
+      co_await send_type_empty_payload(message::type::not_interested);
     }
 
    private:
@@ -91,6 +118,12 @@ namespace seatorrent {
           break;
         }
       }
+    }
+
+    exec::task<void> send_type_empty_payload(message::type type) {
+      char buf[5] = {0, 0, 0, 1, static_cast<char>(type)};
+      std::string_view view{buf, sizeof(buf)};
+      co_await util::send_all(tcp_, view);
     }
 
     stdnet::basic_stream_socket<stdnet::ip::tcp> tcp_;
